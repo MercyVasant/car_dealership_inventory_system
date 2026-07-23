@@ -24,6 +24,7 @@ const transactionController = new TransactionController(transactionService);
 
 // Vehicle Routes
 router.post('/vehicles', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.createVehicle(req, res)));
+router.get('/vehicles/search', authMiddleware, catchAsync((req, res) => vehicleController.searchVehicles(req, res)));
 router.get('/vehicles', authMiddleware, catchAsync((req, res) => vehicleController.getVehicles(req, res)));
 router.put('/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.updateVehicle(req, res)));
 router.delete('/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.deleteVehicle(req, res)));

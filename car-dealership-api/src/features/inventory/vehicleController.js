@@ -30,6 +30,26 @@ class VehicleController {
     res.status(201).json(vehicle);
   }
 
+  async searchVehicles(req, res) {
+    const searchSchema = Joi.object({
+      make: Joi.string().optional(),
+      model: Joi.string().optional(),
+      category: Joi.string().optional(),
+      minPrice: Joi.number().min(0).optional(),
+      maxPrice: Joi.number().min(0).optional(),
+      page: Joi.number().integer().min(1).default(1),
+      limit: Joi.number().integer().min(1).max(100).default(20)
+    });
+
+    const { error, value } = searchSchema.validate(req.query);
+    if (error) {
+      throw new BadRequestError(error.details[0].message);
+    }
+
+    const result = await this.vehicleService.searchVehicles(value);
+    res.status(200).json(result);
+  }
+
   async getVehicles(req, res) {
     const { error, value } = getVehiclesSchema.validate(req.query);
     if (error) {
