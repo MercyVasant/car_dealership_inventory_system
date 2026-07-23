@@ -1,4 +1,8 @@
+import { useState } from 'react';
 import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
+import { DealCalculator } from '../ui/DealCalculator';
+import { DealAgreement } from '../ui/DealAgreement';
 
 const statusBadge = (quantity, inStock) => {
   const label = inStock ? 'Available' : 'Sold Out';
@@ -17,6 +21,9 @@ const statusBadge = (quantity, inStock) => {
 
 export const VehicleCard = ({ vehicle, onPurchase }) => {
   const { id, make, model, category, price, quantity_in_stock, image_url, year } = vehicle;
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [showAgreement, setShowAgreement] = useState(false);
+  const [monthlyPayment, setMonthlyPayment] = useState(0);
 
   const getFallbackImage = (brand) => {
     const b = brand?.toLowerCase();
@@ -120,16 +127,42 @@ export const VehicleCard = ({ vehicle, onPurchase }) => {
         </div>
       </div>
 
-      <div style={{ padding: '0 24px 24px' }}>
+      <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <Button
           variant={inStock ? 'primary' : 'secondary'}
-          style={{ width: '100%', padding: '14px' }}
-          onClick={() => onPurchase(id)}
+          style={{ width: '100%', padding: '14px', border: 'none' }}
+          onClick={() => setShowCalculator(true)}
           disabled={!inStock}
         >
-          {inStock ? 'Purchase Vehicle' : 'Currently Unavailable'}
+          {inStock ? 'Calculate Deal & Purchase' : 'Currently Unavailable'}
         </Button>
       </div>
+
+      <Modal isOpen={showCalculator} onClose={() => setShowCalculator(false)} title="Deal Calculator">
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <DealCalculator 
+            initialPrice={price} 
+            onProceed={(payment) => {
+              setMonthlyPayment(payment);
+              setShowCalculator(false);
+              setShowAgreement(true);
+            }} 
+          />
+        </div>
+      </Modal>
+
+      <Modal isOpen={showAgreement} onClose={() => setShowAgreement(false)} title="Deal Agreement">
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <DealAgreement 
+            monthlyPayment={monthlyPayment} 
+            onCancel={() => setShowAgreement(false)}
+            onAccept={() => {
+              setShowAgreement(false);
+              onPurchase(id);
+            }} 
+          />
+        </div>
+      </Modal>
     </div>
   );
 };
