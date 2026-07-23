@@ -20,9 +20,9 @@ export const VehicleList = () => {
       if (make) params.make = make;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
-      // API: GET /api/vehicles/search → { vehicles: [], total, limit, offset }
+      // API: GET /api/vehicles/search → { data: [], total, page, limit }
       const response = await apiClient.get('/vehicles/search', { params });
-      setVehicles(response.data.vehicles);
+      setVehicles(response.data.data || []);
     } catch {
       setError('Failed to load vehicles');
     } finally {
