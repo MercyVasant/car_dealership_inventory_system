@@ -92,20 +92,48 @@ describe('AuthService', () => {
       await expect(authService.refresh('expired_token')).rejects.toThrow('Refresh token expired');
     });
 
-    it('should return a new access token for a valid refresh token', async () => {
+    it('should return a new access and refresh token, and revoke the old one', async () => {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
       
-      mockTokenRepo.findByToken.mockResolvedValue({
+      const mockUser = { id: 'u1', email: 'user@test.com', role: 'USER' };
+      const oldToken = {
+        id: 't1',
+        token: 'valid_token',
         is_revoked: false,
         expires_at: futureDate,
-        User: { id: 'u1', email: 'user@test.com', role: 'USER' }
-      });
+        user_id: 'u1',
+        User: mockUser
+      };
+      
+      mockTokenRepo.findByToken.mockResolvedValue(oldToken);
       jwt.sign.mockReturnValue('new_access_token');
+      mockTokenRepo.create.mockResolvedValue({ token: 'new_refresh_token' });
 
       const result = await authService.refresh('valid_token');
+      
       expect(result.accessToken).toBe('new_access_token');
+      expect(result.refreshToken).toBeDefined();
       expect(jwt.sign).toHaveBeenCalled();
+      expect(mockTokenRepo.revoke).toHaveBeenCalledWith(oldToken.id);
+      expect(mockTokenRepo.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('logout', () => {
+    it('should revoke the given refresh token', async () => {
+      mockTokenRepo.findByToken.mockResolvedValue({ id: 't1', is_revoked: false });
+      
+      await authService.logout('valid_token');
+      
+      expect(mockTokenRepo.findByToken).toHaveBeenCalledWith('valid_token');
+      expect(mockTokenRepo.revoke).toHaveBeenCalledWith('t1');
+    });
+
+    it('should do nothing if token not found', async () => {
+      mockTokenRepo.findByToken.mockResolvedValue(null);
+      await authService.logout('invalid_token');
+      expect(mockTokenRepo.revoke).not.toHaveBeenCalled();
     });
   });
 });
