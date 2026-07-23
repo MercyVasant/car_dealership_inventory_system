@@ -5,9 +5,10 @@ const { AuthService } = require('./authService');
 const { UserRepository } = require('../user/userRepository');
 const { RefreshTokenRepository } = require('./refreshTokenRepository');
 
-// Temporary simplistic injection
-const userRepo = new UserRepository();
-const refreshTokenRepo = new RefreshTokenRepository();
+const { User, RefreshToken } = require('../../db');
+
+const userRepo = new UserRepository(User);
+const refreshTokenRepo = new RefreshTokenRepository(RefreshToken);
 const authService = new AuthService(userRepo, refreshTokenRepo);
 const authController = new AuthController(authService);
 
