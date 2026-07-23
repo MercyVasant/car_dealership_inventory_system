@@ -50,18 +50,10 @@ class AuthService {
 
     const user = tokenRecord.User; // Assumes relationship is loaded, or we fetch it
     const accessToken = this.generateAccessToken(user);
-    const refreshTokenString = crypto.randomBytes(40).toString('hex');
+    const refreshTokenString = await this._createRefreshToken(user.id);
     
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-
-    // Revoke old token and create new one
+    // Revoke old token
     await this.refreshTokenRepository.revoke(tokenRecord.id);
-    await this.refreshTokenRepository.create({
-      token: refreshTokenString,
-      user_id: user.id,
-      expires_at: expiresAt
-    });
     
     return { accessToken, refreshToken: refreshTokenString };
   }
@@ -79,18 +71,23 @@ class AuthService {
     return jwt.sign(payload, secret, { expiresIn: '15m' });
   }
 
-  async generateTokens(user) {
-    const accessToken = this.generateAccessToken(user);
+  async _createRefreshToken(userId) {
     const refreshTokenString = crypto.randomBytes(40).toString('hex');
-    
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
     await this.refreshTokenRepository.create({
       token: refreshTokenString,
-      user_id: user.id,
+      user_id: userId,
       expires_at: expiresAt
     });
+
+    return refreshTokenString;
+  }
+
+  async generateTokens(user) {
+    const accessToken = this.generateAccessToken(user);
+    const refreshTokenString = await this._createRefreshToken(user.id);
 
     return {
       accessToken,
