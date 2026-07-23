@@ -49,10 +49,12 @@ app.get('/health', (req, res) => {
 
 app.use(errorHandler);
 
+const logger = require('./utils/logger');
+
 // Start server if not running in test mode
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+    logger.info(`Server listening on port ${PORT}`);
   });
 }
 
