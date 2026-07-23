@@ -5,12 +5,14 @@ import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { RestockModal } from './RestockModal';
 
+const INITIAL_FORM_STATE = { make: '', model: '', category: '', price: '', quantity_in_stock: 0 };
+
 export const AdminInventoryPanel = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [restockVehicle, setRestockVehicle] = useState(null);
-  const [form, setForm] = useState({ make: '', model: '', category: '', price: '', quantity_in_stock: 0 });
+  const [form, setForm] = useState(INITIAL_FORM_STATE);
 
   const fetchVehicles = async () => {
     setLoading(true);
@@ -39,7 +41,7 @@ export const AdminInventoryPanel = () => {
     e.preventDefault();
     await apiClient.post('/vehicles', { ...form, price: Number(form.price) });
     setIsModalOpen(false);
-    setForm({ make: '', model: '', category: '', price: '', quantity_in_stock: 0 });
+    setForm(INITIAL_FORM_STATE);
     fetchVehicles();
   };
 
