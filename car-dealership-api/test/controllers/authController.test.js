@@ -10,7 +10,8 @@ describe('AuthController (Integration)', () => {
     mockAuthService = {
       register: jest.fn(),
       login: jest.fn(),
-      refresh: jest.fn()
+      refresh: jest.fn(),
+      logout: jest.fn()
     };
     
     const authController = new AuthController(mockAuthService);
@@ -100,6 +101,29 @@ describe('AuthController (Integration)', () => {
         .send({ token: 'invalid' });
 
       expect(res.statusCode).toEqual(401);
+    });
+  });
+
+  describe('POST /api/auth/logout', () => {
+    it('should call authService.logout and return 204', async () => {
+      mockAuthService.logout.mockResolvedValue();
+
+      const res = await request(app)
+        .post('/api/auth/logout')
+        .send({ token: 'valid_refresh' });
+
+      expect(res.statusCode).toEqual(204);
+      expect(mockAuthService.logout).toHaveBeenCalledWith('valid_refresh');
+    });
+
+    it('should return 500 if logout fails', async () => {
+      mockAuthService.logout.mockRejectedValue(new Error('DB Error'));
+
+      const res = await request(app)
+        .post('/api/auth/logout')
+        .send({ token: 'valid_refresh' });
+
+      expect(res.statusCode).toEqual(500);
     });
   });
 });
