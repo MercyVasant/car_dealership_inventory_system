@@ -1,5 +1,7 @@
 const { newDb } = require('pg-mem');
 const { Sequelize } = require('sequelize');
+const { VehicleRepository } = require('../../src/features/inventory/vehicleRepository');
+const { initVehicleModel } = require('../../src/features/inventory/Vehicle.model');
 
 describe('VehicleRepository (Real DB via pg-mem)', () => {
   let db;
@@ -13,13 +15,13 @@ describe('VehicleRepository (Real DB via pg-mem)', () => {
     sequelize = new Sequelize({
       dialect: 'postgres',
       dialectModule: db.adapters.createPg(),
-      logging: false,
+      logging: console.log,
     });
 
-    // We will initialize the model here later:
-    // Vehicle = initVehicleModel(sequelize);
-    // VehicleRepositoryInstance = new VehicleRepository(Vehicle);
-    // await sequelize.sync({ force: true }); 
+    Vehicle = initVehicleModel(sequelize);
+    VehicleRepositoryInstance = new VehicleRepository(Vehicle);
+    
+    await sequelize.sync({ force: true }); 
   });
 
   afterAll(async () => {
@@ -29,6 +31,8 @@ describe('VehicleRepository (Real DB via pg-mem)', () => {
   });
 
   describe('create and find vehicle', () => {
+    let testVehicle;
+
     it('should save a valid vehicle', async () => {
       const vehicleData = {
         make: 'Toyota',
@@ -38,21 +42,23 @@ describe('VehicleRepository (Real DB via pg-mem)', () => {
         status: 'AVAILABLE',
       };
       
-      const vehicle = await VehicleRepositoryInstance.create(vehicleData);
+      testVehicle = await VehicleRepositoryInstance.create(vehicleData);
 
-      expect(vehicle.id).toBeDefined();
-      expect(vehicle.make).toBe('Toyota');
-      expect(vehicle.status).toBe('AVAILABLE');
+      expect(testVehicle.id).toBeDefined();
+      expect(testVehicle.make).toBe('Toyota');
+      expect(testVehicle.status).toBe('AVAILABLE');
     });
 
     it('should find vehicle by id', async () => {
-      // Mock failure because it's not implemented yet
-      expect(VehicleRepositoryInstance).toBeDefined();
+      const result = await VehicleRepositoryInstance.findById(testVehicle.id);
+      expect(result).toBeDefined();
+      expect(result.make).toBe('Toyota');
     });
 
     it('should find all available vehicles', async () => {
-      // Mock failure because it's not implemented yet
-      expect(VehicleRepositoryInstance).toBeDefined();
+      const results = await VehicleRepositoryInstance.findAllAvailable();
+      expect(results.length).toBeGreaterThan(0);
+      expect(results[0].status).toBe('AVAILABLE');
     });
   });
 });
