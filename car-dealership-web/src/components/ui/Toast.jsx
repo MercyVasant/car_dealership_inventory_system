@@ -1,29 +1,35 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useCallback } from 'react';
 
-const ToastContext = createContext();
-export const useToast = () => useContext(ToastContext);
+const ToastContext = createContext(null);
 
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const showToast = useCallback((message, type = 'info') => {
+  const addToast = useCallback((message, type = 'info') => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
   }, []);
 
-  const typeStyles = { success: 'bg-green-600', error: 'bg-red-600', info: 'bg-blue-600' };
-
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 space-y-2 z-50">
+      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {toasts.map(t => (
-          <div key={t.id} role="alert" className={`${typeStyles[t.type] || typeStyles.info} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-64`}>
-            <span>{t.message}</span>
+          <div key={t.id} style={{
+            background: t.type === 'error' ? '#1a0000' : '#0a0a0a',
+            border: `1px solid ${t.type === 'error' ? '#ef4444' : '#333'}`,
+            color: t.type === 'error' ? '#ef4444' : '#fff',
+            padding: '12px 20px', fontSize: '13px', minWidth: '260px',
+            fontFamily: "'Inter', sans-serif",
+          }}>
+            {t.message}
           </div>
         ))}
       </div>
     </ToastContext.Provider>
   );
 };
+
+export const useToast = () => useContext(ToastContext);

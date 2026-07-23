@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: cardealership
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2810
+      POSTGRES_DB: car_dealership
     ports:
       - "5432:5432"
     volumes:

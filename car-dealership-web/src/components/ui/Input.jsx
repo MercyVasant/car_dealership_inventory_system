@@ -1,10 +1,14 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 export const Input = forwardRef(({ className = '', type = 'text', error, label, id, disabled, ...props }, ref) => {
   return (
-    <div className="w-full space-y-1">
+    <div style={{ width: '100%' }}>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        <label htmlFor={id} style={{
+          display: 'block', marginBottom: '6px',
+          fontSize: '13px', fontWeight: 500,
+          color: '#cbd5e1',
+        }}>
           {label}
         </label>
       )}
@@ -13,10 +17,24 @@ export const Input = forwardRef(({ className = '', type = 'text', error, label, 
         id={id}
         type={type}
         disabled={disabled}
-        className={`block w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${error ? 'border-red-500' : 'border-gray-300'} disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
+        className={className}
+        style={{
+          display: 'block', width: '100%',
+          background: '#1e293b', color: '#f8fafc',
+          border: `1px solid ${error ? '#ef4444' : '#334155'}`,
+          padding: '12px 16px', fontSize: '15px',
+          fontFamily: "'Montserrat', sans-serif",
+          borderRadius: '8px',
+          outline: 'none', boxSizing: 'border-box',
+          transition: 'border-color 0.2s',
+          opacity: disabled ? 0.5 : 1,
+          cursor: disabled ? 'not-allowed' : 'text',
+        }}
+        onFocus={e => { e.target.style.borderColor = '#d4af37'; }}
+        onBlur={e => { e.target.style.borderColor = error ? '#ef4444' : '#334155'; }}
         {...props}
       />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p style={{ marginTop: '6px', fontSize: '13px', color: '#ef4444' }}>{error}</p>}
     </div>
   );
 });
