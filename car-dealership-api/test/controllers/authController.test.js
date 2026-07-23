@@ -1,6 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 const { AuthController } = require('../../src/features/auth/authController');
+const { ConflictError, UnauthorizedError } = require('../../src/utils/errors');
 
 describe('AuthController (Integration)', () => {
   let mockAuthService;
@@ -48,7 +49,7 @@ describe('AuthController (Integration)', () => {
     });
 
     it('should return 409 if user already exists', async () => {
-      mockAuthService.register.mockRejectedValue(new Error('User already exists'));
+      mockAuthService.register.mockRejectedValue(new ConflictError('User already exists'));
       
       const res = await request(app)
         .post('/api/auth/register')
@@ -72,7 +73,7 @@ describe('AuthController (Integration)', () => {
     });
 
     it('should return 401 for invalid credentials', async () => {
-      mockAuthService.login.mockRejectedValue(new Error('Invalid credentials'));
+      mockAuthService.login.mockRejectedValue(new UnauthorizedError('Invalid credentials'));
 
       const res = await request(app)
         .post('/api/auth/login')
@@ -95,7 +96,7 @@ describe('AuthController (Integration)', () => {
     });
 
     it('should return 401 for invalid refresh token', async () => {
-      mockAuthService.refresh.mockRejectedValue(new Error('Invalid refresh token'));
+      mockAuthService.refresh.mockRejectedValue(new UnauthorizedError('Invalid refresh token'));
 
       const res = await request(app)
         .post('/api/auth/refresh')

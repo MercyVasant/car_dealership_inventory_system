@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { ConflictError, UnauthorizedError } = require('../../utils/errors');
 
 class AuthService {
   constructor(userRepository, refreshTokenRepository) {
@@ -11,7 +12,7 @@ class AuthService {
   async register({ username, email, password }) {
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new Error('User already exists');
+      throw new ConflictError('User already exists');
     }
 
     const password_hash = await bcrypt.hash(password, 10);
@@ -26,12 +27,12 @@ class AuthService {
   async login(email, password) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     return this.generateTokens(user);
@@ -41,11 +42,11 @@ class AuthService {
     const tokenRecord = await this.refreshTokenRepository.findByToken(tokenString);
     
     if (!tokenRecord || tokenRecord.is_revoked) {
-      throw new Error('Invalid refresh token');
+      throw new UnauthorizedError('Invalid refresh token');
     }
 
     if (new Date() > tokenRecord.expires_at) {
-      throw new Error('Refresh token expired');
+      throw new UnauthorizedError('Refresh token expired');
     }
 
     const user = tokenRecord.User; // Assumes relationship is loaded, or we fetch it

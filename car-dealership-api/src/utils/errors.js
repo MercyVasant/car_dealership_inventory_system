@@ -31,10 +31,17 @@ class ForbiddenError extends ApiError {
   }
 }
 
+class ConflictError extends ApiError {
+  constructor(message = 'Conflict') {
+    super(message, 409, 'ConflictError');
+  }
+}
+
 module.exports = {
   ApiError,
   NotFoundError,
   BadRequestError,
   UnauthorizedError,
-  ForbiddenError
+  ForbiddenError,
+  ConflictError
 };

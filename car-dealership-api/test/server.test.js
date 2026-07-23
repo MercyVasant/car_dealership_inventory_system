@@ -8,9 +8,9 @@ describe('Security (Integration)', () => {
       .set('Origin', 'http://evil.com');
     
     // For a restricted CORS setup, it should either block the request
-    // or not return the Access-Control-Allow-Origin header for evil.com.
-    // Usually with cors package, if origin is not allowed, it sets no ACAO header.
-    expect(res.headers['access-control-allow-origin']).toBeUndefined();
+    // Our dynamic CORS setup throws a ForbiddenError which results in 403.
+    expect(res.statusCode).toBe(403);
+    expect(res.text).toContain('The CORS policy for this site does not allow access from the specified Origin.');
   });
 
   it('should return 429 when rate limit is exceeded on /api/auth/**', async () => {

@@ -12,6 +12,7 @@ const rateLimit = require('express-rate-limit');
 // Security and utility middlewares
 app.use(helmet());
 
+const { ForbiddenError } = require('./utils/errors');
 const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:5173'];
 const corsOptions = {
   origin: function (origin, callback) {
@@ -19,7 +20,7 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+      return callback(new ForbiddenError(msg), false);
     }
     return callback(null, true);
   },
@@ -39,10 +40,14 @@ const authLimiter = rateLimit({
 
 app.use('/api/auth', authLimiter, authRoutes);
 
+const { errorHandler } = require('./middleware/errorHandler');
+
 // Basic health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
+
+app.use(errorHandler);
 
 // Start server if not running in test mode
 if (process.env.NODE_ENV !== 'test') {
