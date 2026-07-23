@@ -8,34 +8,48 @@ const initVehicleModel = (sequelize) => {
       primaryKey: true,
     },
     make: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     model: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
-    year: {
-      type: DataTypes.INTEGER,
+    category: {
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     price: {
-      type: DataTypes.DECIMAL,
+      type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
+      validate: { min: 0 }
     },
-    status: {
-      type: DataTypes.STRING(20),
+    quantity_in_stock: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 'AVAILABLE',
-      validate: {
-        isIn: [['AVAILABLE', 'SOLD', 'RESERVED']],
-      },
+      defaultValue: 0,
+      validate: { min: 0 }
     },
+    image_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    is_deleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    version: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    }
   }, {
     tableName: 'vehicles',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    version: true // Sequelize native optimistic locking uses 'version' field
   });
 };
 

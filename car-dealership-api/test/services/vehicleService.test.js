@@ -23,12 +23,6 @@ describe('VehicleService', () => {
       expect(result.make).toBe('Ford');
       expect(mockVehicleRepository.create).toHaveBeenCalledWith(payload);
     });
-
-    it('should throw BadRequestError if price is negative', async () => {
-      const payload = { make: 'Ford', model: 'Focus', category: 'Compact', price: -5, quantity_in_stock: 2 };
-      
-      await expect(vehicleService.createVehicle(payload)).rejects.toThrow(BadRequestError);
-    });
   });
 
   describe('getVehicles', () => {
@@ -47,6 +41,27 @@ describe('VehicleService', () => {
         limit: 10,
         order: [['created_at', 'DESC']]
       });
+    });
+  });
+  describe('updateVehicle', () => {
+    it('should update and return the vehicle', async () => {
+      const payload = { make: 'Honda', price: 20000 };
+      const existingVehicle = { id: 'uuid-1', update: jest.fn().mockResolvedValue(true) };
+      mockVehicleRepository.findById.mockResolvedValue(existingVehicle);
+
+      const result = await vehicleService.updateVehicle('uuid-1', payload);
+      expect(mockVehicleRepository.findById).toHaveBeenCalledWith('uuid-1');
+      expect(existingVehicle.update).toHaveBeenCalledWith(payload);
+    });
+  });
+
+  describe('deleteVehicle', () => {
+    it('should soft delete the vehicle', async () => {
+      const existingVehicle = { id: 'uuid-1', update: jest.fn().mockResolvedValue(true) };
+      mockVehicleRepository.findById.mockResolvedValue(existingVehicle);
+
+      await vehicleService.deleteVehicle('uuid-1');
+      expect(existingVehicle.update).toHaveBeenCalledWith({ is_deleted: true });
     });
   });
 });

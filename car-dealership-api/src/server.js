@@ -40,6 +40,9 @@ const authLimiter = rateLimit({
 
 app.use('/api/auth', authLimiter, authRoutes);
 
+const vehicleRoutes = require('./features/inventory/routes');
+app.use('/api/vehicles', vehicleRoutes);
+
 const { errorHandler } = require('./middleware/errorHandler');
 
 // Basic health check endpoint

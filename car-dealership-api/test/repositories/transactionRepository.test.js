@@ -30,8 +30,8 @@ describe('TransactionRepository (Real DB via pg-mem)', () => {
     Transaction = initTransactionModel(sequelize);
     
     // Setup Associations
-    User.hasMany(Transaction, { foreignKey: 'buyer_id' });
-    Transaction.belongsTo(User, { foreignKey: 'buyer_id', as: 'buyer' });
+    User.hasMany(Transaction, { foreignKey: 'user_id' });
+    Transaction.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
     
     Vehicle.hasMany(Transaction, { foreignKey: 'vehicle_id' });
     Transaction.belongsTo(Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' });
@@ -50,9 +50,9 @@ describe('TransactionRepository (Real DB via pg-mem)', () => {
     testVehicle = await Vehicle.create({
       make: 'Honda',
       model: 'Civic',
-      year: 2023,
+      category: 'Sedan',
       price: 25000,
-      status: 'AVAILABLE'
+      quantity_in_stock: 5
     });
   });
 
@@ -67,17 +67,19 @@ describe('TransactionRepository (Real DB via pg-mem)', () => {
 
     it('should save a valid transaction', async () => {
       const transactionData = {
-        buyer_id: testUser.id,
+        user_id: testUser.id,
         vehicle_id: testVehicle.id,
-        sale_price: 24500,
-        status: 'COMPLETED'
+        type: 'PURCHASE',
+        quantity: 1,
+        price_at_time: 25000,
+        status: 'SUCCESS'
       };
       
       testTransaction = await TransactionRepositoryInstance.create(transactionData);
 
       expect(testTransaction.id).toBeDefined();
-      expect(testTransaction.status).toBe('COMPLETED');
-      expect(testTransaction.buyer_id).toBe(testUser.id);
+      expect(testTransaction.status).toBe('SUCCESS');
+      expect(testTransaction.user_id).toBe(testUser.id);
       expect(testTransaction.vehicle_id).toBe(testVehicle.id);
     });
 
@@ -90,7 +92,7 @@ describe('TransactionRepository (Real DB via pg-mem)', () => {
     it('should find transactions by user id', async () => {
       const results = await TransactionRepositoryInstance.findByUserId(testUser.id);
       expect(results.length).toBeGreaterThan(0);
-      expect(results[0].buyer_id).toBe(testUser.id);
+      expect(results[0].user_id).toBe(testUser.id);
     });
   });
 });

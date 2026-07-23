@@ -37,6 +37,8 @@ describe('VehicleController (Integration)', () => {
     // Mocks for POST and GET
     app.post('/api/vehicles', authenticate, authorize('ADMIN'), catchAsync((req, res) => vehicleController.createVehicle(req, res)));
     app.get('/api/vehicles', authenticate, catchAsync((req, res) => vehicleController.getVehicles(req, res)));
+    app.put('/api/vehicles/:id', authenticate, authorize('ADMIN'), catchAsync((req, res) => vehicleController.updateVehicle(req, res)));
+    app.delete('/api/vehicles/:id', authenticate, authorize('ADMIN'), catchAsync((req, res) => vehicleController.deleteVehicle(req, res)));
 
     app.use(errorHandler);
   });
@@ -99,6 +101,58 @@ describe('VehicleController (Integration)', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.data).toHaveLength(1);
       expect(mockVehicleService.getVehicles).toHaveBeenCalledWith({ page: 1, limit: 20 });
+    });
+  });
+
+  describe('PUT /api/vehicles/:id', () => {
+    const updatePayload = {
+      make: 'Honda',
+      model: 'Accord',
+      category: 'Sedan',
+      price: 22000,
+      quantity_in_stock: 3
+    };
+
+    it('should update and return 200 for admin', async () => {
+      mockVehicleService.updateVehicle.mockResolvedValue({ id: 'uuid-1', ...updatePayload });
+
+      const res = await request(app)
+        .put('/api/vehicles/uuid-1')
+        .set('x-role', 'ADMIN')
+        .send(updatePayload);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.model).toBe('Accord');
+    });
+
+    it('should return 400 for invalid payload', async () => {
+      const res = await request(app)
+        .put('/api/vehicles/uuid-1')
+        .set('x-role', 'ADMIN')
+        .send({ price: -100 });
+        
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe('DELETE /api/vehicles/:id', () => {
+    it('should return 204 when admin deletes a vehicle', async () => {
+      mockVehicleService.deleteVehicle.mockResolvedValue();
+
+      const res = await request(app)
+        .delete('/api/vehicles/uuid-1')
+        .set('x-role', 'ADMIN');
+
+      expect(res.statusCode).toBe(204);
+      expect(mockVehicleService.deleteVehicle).toHaveBeenCalledWith('uuid-1');
+    });
+
+    it('should return 403 when non-admin attempts to delete', async () => {
+      const res = await request(app)
+        .delete('/api/vehicles/uuid-1')
+        .set('x-role', 'USER');
+
+      expect(res.statusCode).toBe(403);
     });
   });
 });

@@ -11,13 +11,8 @@ class VehicleRepository {
     return await this.Vehicle.findByPk(id);
   }
 
-  async findAllAvailable() {
-    return await this.Vehicle.findAll({
-      where: {
-        status: 'AVAILABLE'
-      },
-      order: [['created_at', 'DESC']]
-    });
+  async findAll(options = {}) {
+    return await this.Vehicle.findAndCountAll(options);
   }
 }
 

@@ -56,9 +56,9 @@ describe('VehicleRepository (Real DB via pg-mem)', () => {
     });
 
     it('should find all available vehicles', async () => {
-      const results = await VehicleRepositoryInstance.findAllAvailable();
-      expect(results.length).toBeGreaterThan(0);
-      expect(results[0].status).toBe('AVAILABLE');
+      const results = await VehicleRepositoryInstance.findAll({ where: { is_deleted: false } });
+      expect(results.rows.length).toBeGreaterThan(0);
+      expect(results.rows[0].status).toBe('AVAILABLE');
     });
   });
 });
