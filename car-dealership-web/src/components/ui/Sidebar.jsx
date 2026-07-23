@@ -18,13 +18,22 @@ export const Sidebar = () => {
         </NavLink>
 
         {user?.role === 'ADMIN' && (
-          <NavLink 
-            to="/admin" 
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-          >
-            <ShieldAlert size={20} />
-            <span>Admin Panel</span>
-          </NavLink>
+          <>
+            <NavLink 
+              to="/admin" 
+              className={({ isActive }) => (isActive && window.location.pathname === '/admin' ? 'nav-item active' : 'nav-item')}
+            >
+              <ShieldAlert size={20} />
+              <span>Admin Panel</span>
+            </NavLink>
+            <NavLink 
+              to="/admin/transactions" 
+              className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+            >
+              <ShieldAlert size={20} />
+              <span>Transactions</span>
+            </NavLink>
+          </>
         )}
       </nav>
     </aside>
