@@ -6,10 +6,38 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const authRoutes = require('./features/auth/routes');
+const rateLimit = require('express-rate-limit');
+
 // Security and utility middlewares
 app.use(helmet());
-app.use(cors());
+
+const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:5173'];
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Rate Limiting for auth
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window`
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/auth', authLimiter, authRoutes);
 
 // Basic health check endpoint
 app.get('/health', (req, res) => {
