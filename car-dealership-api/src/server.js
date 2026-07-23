@@ -43,6 +43,10 @@ app.use('/api/auth', authLimiter, authRoutes);
 const inventoryRoutes = require('./features/inventory/routes');
 app.use('/api', inventoryRoutes);
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./swagger');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
 const { errorHandler } = require('./middleware/errorHandler');
 
 // Basic health check endpoint

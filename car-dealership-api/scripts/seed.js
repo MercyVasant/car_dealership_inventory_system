@@ -2,10 +2,9 @@ const { Sequelize } = require('sequelize');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
-const { initUserModel } = require('../src/features/user/User.model');
-const { initVehicleModel } = require('../src/features/inventory/Vehicle.model');
-const { initTransactionModel } = require('../src/features/inventory/Transaction.model');
-const { initRefreshTokenModel } = require('../src/features/auth/RefreshToken.model');
+const { User } = require('../src/features/user/User.model');
+const { Vehicle } = require('../src/features/inventory/Vehicle.model');
+const { Transaction } = require('../src/features/inventory/Transaction.model');
 
 const seedDatabase = async () => {
   console.log('Connecting to database...');
@@ -23,24 +22,7 @@ const seedDatabase = async () => {
 
   try {
     await sequelize.authenticate();
-    console.log('Database connection has been established successfully.');
-
-    // Initialize Models
-    console.log('Initializing models...');
-    const User = initUserModel(sequelize);
-    const Vehicle = initVehicleModel(sequelize);
-    const Transaction = initTransactionModel(sequelize);
-    const RefreshToken = initRefreshTokenModel(sequelize);
-
-    // Setup Associations
-    User.hasMany(Transaction, { foreignKey: 'buyer_id' });
-    Transaction.belongsTo(User, { foreignKey: 'buyer_id', as: 'buyer' });
-    
-    Vehicle.hasMany(Transaction, { foreignKey: 'vehicle_id' });
-    Transaction.belongsTo(Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' });
-    
-    User.hasMany(RefreshToken, { foreignKey: 'user_id' });
-    RefreshToken.belongsTo(User, { foreignKey: 'user_id' });
+    console.log('Database connection established.');
 
     console.log('Checking existing data...');
     const userCount = await User.count();
@@ -69,11 +51,11 @@ const seedDatabase = async () => {
 
     console.log('Seeding Vehicles...');
     const vehicles = await Vehicle.bulkCreate([
-      { make: 'Toyota', model: 'Camry', year: 2022, price: 24000, status: 'AVAILABLE' },
-      { make: 'Honda', model: 'Civic', year: 2023, price: 26000, status: 'AVAILABLE' },
-      { make: 'Ford', model: 'Mustang', year: 2021, price: 35000, status: 'SOLD' },
-      { make: 'Chevrolet', model: 'Tahoe', year: 2023, price: 55000, status: 'AVAILABLE' },
-      { make: 'Tesla', model: 'Model 3', year: 2024, price: 40000, status: 'SOLD' },
+      { make: 'Toyota', model: 'Camry', category: 'Sedan', price: 24000, quantity_in_stock: 5 },
+      { make: 'Honda', model: 'Civic', category: 'Compact', price: 26000, quantity_in_stock: 3 },
+      { make: 'Ford', model: 'Mustang', category: 'Sports', price: 35000, quantity_in_stock: 0 },
+      { make: 'Chevrolet', model: 'Tahoe', category: 'SUV', price: 55000, quantity_in_stock: 2 },
+      { make: 'Tesla', model: 'Model 3', category: 'Electric', price: 40000, quantity_in_stock: 0 },
     ]);
 
     console.log('Seeding Transactions...');
@@ -82,16 +64,20 @@ const seedDatabase = async () => {
 
     await Transaction.bulkCreate([
       {
-        buyer_id: standardUser.id,
+        user_id: standardUser.id,
         vehicle_id: soldMustang.id,
-        sale_price: 34500,
-        status: 'COMPLETED'
+        type: 'PURCHASE',
+        quantity: 1,
+        price_at_time: 35000,
+        status: 'SUCCESS'
       },
       {
-        buyer_id: standardUser.id,
+        user_id: standardUser.id,
         vehicle_id: soldTesla.id,
-        sale_price: 40000,
-        status: 'COMPLETED'
+        type: 'PURCHASE',
+        quantity: 1,
+        price_at_time: 40000,
+        status: 'SUCCESS'
       }
     ]);
 
