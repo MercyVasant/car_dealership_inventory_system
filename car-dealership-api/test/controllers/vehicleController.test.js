@@ -26,6 +26,7 @@ describe('VehicleController (Integration)', () => {
     mockVehicleService = {
       createVehicle: jest.fn(),
       getVehicles: jest.fn(),
+      searchVehicles: jest.fn(),
       updateVehicle: jest.fn(),
       deleteVehicle: jest.fn(),
     };
@@ -38,6 +39,7 @@ describe('VehicleController (Integration)', () => {
 
     // Mocks for POST and GET
     app.post('/api/vehicles', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.createVehicle(req, res)));
+    app.get('/api/vehicles/search', authMiddleware, catchAsync((req, res) => vehicleController.searchVehicles(req, res)));
     app.get('/api/vehicles', authMiddleware, catchAsync((req, res) => vehicleController.getVehicles(req, res)));
     app.put('/api/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.updateVehicle(req, res)));
     app.delete('/api/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.deleteVehicle(req, res)));
@@ -84,6 +86,23 @@ describe('VehicleController (Integration)', () => {
 
       // We expect the controller to throw BadRequestError which results in 400
       expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe('GET /api/vehicles/search', () => {
+    it('should return paginated list of searched vehicles (200)', async () => {
+      mockVehicleService.searchVehicles.mockResolvedValue({
+        data: [{ make: 'Honda', model: 'Civic' }],
+        total: 1,
+        page: 1,
+        limit: 20
+      });
+
+      const res = await request(app).get('/api/vehicles/search?make=Honda').set('x-role', 'USER');
+      
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(mockVehicleService.searchVehicles).toHaveBeenCalledWith({ make: 'Honda', page: 1, limit: 20 });
     });
   });
 

@@ -64,4 +64,31 @@ describe('VehicleService', () => {
       expect(existingVehicle.update).toHaveBeenCalledWith({ is_deleted: true });
     });
   });
+
+  describe('searchVehicles', () => {
+    it('should build correct where clause for filters', async () => {
+      mockVehicleRepository.findAll.mockResolvedValue({ rows: [], count: 0 });
+
+      await vehicleService.searchVehicles({
+        make: 'Honda',
+        minPrice: 10000,
+        maxPrice: 20000,
+        page: 1,
+        limit: 10
+      });
+
+      expect(mockVehicleRepository.findAll).toHaveBeenCalled();
+      const callArgs = mockVehicleRepository.findAll.mock.calls[0][0];
+      
+      expect(callArgs.where.make).toBeDefined();
+      expect(callArgs.where.is_deleted).toBe(false);
+      expect(callArgs.where.price).toBeDefined();
+    });
+
+    it('should throw BadRequestError if minPrice > maxPrice', async () => {
+      const { BadRequestError } = require('../../src/utils/errors');
+      await expect(vehicleService.searchVehicles({ minPrice: 20000, maxPrice: 10000 }))
+        .rejects.toThrow(BadRequestError);
+    });
+  });
 });
