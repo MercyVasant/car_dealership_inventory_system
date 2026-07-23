@@ -19,6 +19,7 @@ describe('AuthController (Integration)', () => {
     app.use(express.json());
     app.post('/api/auth/register', (req, res) => authController.register(req, res));
     app.post('/api/auth/login', (req, res) => authController.login(req, res));
+    app.post('/api/auth/refresh', (req, res) => authController.refresh(req, res));
   });
 
   describe('POST /api/auth/register', () => {

@@ -37,6 +37,20 @@ class AuthController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  async refresh(req, res) {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ error: 'Refresh token is required' });
+      }
+
+      const tokens = await this.authService.refresh(token);
+      return res.status(200).json(tokens);
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+  }
 }
 
 module.exports = { AuthController };
