@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../../api/apiClient';
 import { VehicleCard } from './VehicleCard';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { Navbar } from '../ui/Navbar';
 
 export const VehicleList = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -18,13 +20,12 @@ export const VehicleList = () => {
     setLoading(true);
     setError('');
     try {
-      const params = { limit: 20, offset: 0 };
+      const params = { limit: 20, page: 1 };
       if (make) params.make = make;
       if (model) params.model = model;
       if (category) params.category = category;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
-      // API: GET /api/vehicles/search → { data: [], total, page, limit }
       const response = await apiClient.get('/vehicles/search', { params });
       setVehicles(response.data.data || []);
     } catch {
@@ -34,13 +35,14 @@ export const VehicleList = () => {
     }
   }, [make, model, category, minPrice, maxPrice]);
 
-  useEffect(() => { fetchVehicles(); }, []);
+  useEffect(() => {
+    fetchVehicles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = (e) => { e.preventDefault(); fetchVehicles(); };
 
   const handlePurchase = async (vehicleId) => {
-    // API: POST /api/transactions/purchase → { vehicle_id, quantity }
-    // Verified from transactionRoutes.js
     try {
       await apiClient.post('/transactions/purchase', { vehicle_id: vehicleId, quantity: 1 });
       fetchVehicles();
@@ -50,56 +52,71 @@ export const VehicleList = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-xl shadow-slate-200/60 backdrop-blur md:p-8">
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-cyan-700">Inventory control</p>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-5xl">Search the showroom, filter with precision.</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
-              Browse premium vehicles, narrow by make, model, category, and price, then purchase only what is in stock.
-            </p>
-          </div>
-          <div className="grid grid-cols-3 gap-3 text-center text-sm">
-            <div className="rounded-2xl bg-slate-950 px-4 py-4 text-white">
-              <div className="text-2xl font-black">20</div>
-              <div className="text-slate-400">Default page size</div>
-            </div>
-            <div className="rounded-2xl bg-slate-100 px-4 py-4 text-slate-950">
-              <div className="text-2xl font-black">0</div>
-              <div className="text-slate-500">Out-of-stock disabled</div>
-            </div>
-            <div className="rounded-2xl bg-cyan-50 px-4 py-4 text-slate-950">
-              <div className="text-2xl font-black">A+</div>
-              <div className="text-slate-500">Premium view</div>
-            </div>
-          </div>
-        </div>
+    <div style={{ minHeight: '100vh', background: '#0f172a', color: '#f8fafc', fontFamily: "'Montserrat', sans-serif" }}>
+      <Navbar />
 
-        <form onSubmit={handleSearch} className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Input label="Make" id="make" placeholder="e.g. Toyota" value={make} onChange={(e) => setMake(e.target.value)} />
-          <Input label="Model" id="model" placeholder="e.g. Camry" value={model} onChange={(e) => setModel(e.target.value)} />
-          <Input label="Category" id="category" placeholder="e.g. Sedan" value={category} onChange={(e) => setCategory(e.target.value)} />
-          <Input label="Min Price" id="minPrice" type="number" placeholder="0" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
-          <Input label="Max Price" id="maxPrice" type="number" placeholder="100000" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
-          <div className="xl:col-span-5 flex justify-end">
-            <Button type="submit" className="w-full md:w-auto">Search inventory</Button>
-          </div>
-        </form>
-      </section>
-
-      {error && <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">{error}</div>}
-      {loading ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 py-16 text-center text-slate-500">Loading inventory...</div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {vehicles.length === 0 ? (
-            <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/70 py-16 text-center text-slate-500">No vehicles found.</div>
-          ) : (
-            vehicles.map(v => <VehicleCard key={v.id} vehicle={v} onPurchase={handlePurchase} />)
-          )}
+      {/* Search Header */}
+      <div style={{
+        background: '#1e293b',
+        borderBottom: '1px solid #334155',
+        padding: '32px 24px'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#f8fafc', marginBottom: '24px' }}>
+            Browse Collection
+          </h2>
+          <form onSubmit={handleSearch} style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '16px', alignItems: 'end',
+          }}>
+            <Input label="Brand" id="make" placeholder="e.g. Porsche" value={make} onChange={(e) => setMake(e.target.value)} />
+            <Input label="Model" id="model" placeholder="e.g. 911" value={model} onChange={(e) => setModel(e.target.value)} />
+            <Input label="Type" id="category" placeholder="e.g. Coupe" value={category} onChange={(e) => setCategory(e.target.value)} />
+            <Input label="Min Value" id="minPrice" type="number" placeholder="0" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
+            <Input label="Max Value" id="maxPrice" type="number" placeholder="No limit" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
+            <Button type="submit" style={{ padding: '12px' }}>Apply Filters</Button>
+          </form>
         </div>
-      )}
+      </div>
+
+      {/* Results */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px' }}>
+        {error && (
+          <div role="alert" style={{
+            marginBottom: '32px', padding: '16px 20px', borderRadius: '8px',
+            background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239,68,68,0.2)',
+            color: '#f87171', fontSize: '14px',
+          }}>
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div style={{
+            textAlign: 'center', padding: '100px 0',
+            fontSize: '14px', fontWeight: 600, color: '#94a3b8',
+          }}>
+            Retrieving inventory...
+          </div>
+        ) : vehicles.length === 0 ? (
+          <div style={{
+            textAlign: 'center', padding: '100px 0',
+            fontSize: '14px', fontWeight: 600, color: '#94a3b8',
+          }}>
+            No matching vehicles available in current allocation.
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+            gap: '24px',
+          }}>
+            {vehicles.map(v => (
+              <VehicleCard key={v.id} vehicle={v} onPurchase={handlePurchase} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
