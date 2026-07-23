@@ -2,6 +2,8 @@ const request = require('supertest');
 const express = require('express');
 const { AuthController } = require('../../src/features/auth/authController');
 const { ConflictError, UnauthorizedError } = require('../../src/utils/errors');
+const { catchAsync } = require('../../src/utils/catchAsync');
+const { errorHandler } = require('../../src/middleware/errorHandler');
 
 describe('AuthController (Integration)', () => {
   let mockAuthService;
@@ -19,10 +21,11 @@ describe('AuthController (Integration)', () => {
     
     app = express();
     app.use(express.json());
-    app.post('/api/auth/register', (req, res) => authController.register(req, res));
-    app.post('/api/auth/login', (req, res) => authController.login(req, res));
-    app.post('/api/auth/refresh', (req, res) => authController.refresh(req, res));
-    app.post('/api/auth/logout', (req, res) => authController.logout(req, res));
+    app.post('/api/auth/register', catchAsync((req, res) => authController.register(req, res)));
+    app.post('/api/auth/login', catchAsync((req, res) => authController.login(req, res)));
+    app.post('/api/auth/refresh', catchAsync((req, res) => authController.refresh(req, res)));
+    app.post('/api/auth/logout', catchAsync((req, res) => authController.logout(req, res)));
+    app.use(errorHandler);
   });
 
   describe('POST /api/auth/register', () => {
