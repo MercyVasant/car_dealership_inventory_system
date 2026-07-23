@@ -27,9 +27,11 @@
     "sequelize": "^6.37.8"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "^12.0.4",
     "eslint": "^10.7.0",
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
+    "pg-mem": "^3.0.14",
     "prettier": "^3.9.6",
     "sequelize-cli": "^6.6.5",
     "supertest": "^7.2.2",
