@@ -28,6 +28,8 @@ router.get('/vehicles/search', authMiddleware, catchAsync((req, res) => vehicleC
 router.get('/vehicles', authMiddleware, catchAsync((req, res) => vehicleController.getVehicles(req, res)));
 router.put('/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.updateVehicle(req, res)));
 router.delete('/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.deleteVehicle(req, res)));
+router.post('/vehicles/:id/purchase', authMiddleware, catchAsync((req, res) => transactionController.purchase(req, res)));
+router.post('/vehicles/:id/restock', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => transactionController.restock(req, res)));
 
 // Transaction Routes
 router.post('/transactions', authMiddleware, catchAsync((req, res) => transactionController.createTransaction(req, res)));

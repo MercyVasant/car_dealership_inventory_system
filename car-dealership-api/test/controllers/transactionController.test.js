@@ -37,6 +37,9 @@ describe('TransactionController', () => {
     app.post('/api/transactions', authMiddleware, catchAsync((req, res) => transactionController.createTransaction(req, res)));
     app.get('/api/transactions/me', authMiddleware, catchAsync((req, res) => transactionController.getMyTransactions(req, res)));
     app.get('/api/transactions', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => transactionController.getAllTransactions(req, res)));
+    
+    app.post('/api/vehicles/:id/purchase', authMiddleware, catchAsync((req, res) => transactionController.purchase(req, res)));
+    app.post('/api/vehicles/:id/restock', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => transactionController.restock(req, res)));
 
     app.use(errorHandler);
   });
@@ -67,6 +70,56 @@ describe('TransactionController', () => {
         .send({ vehicle_id: '00000000-0000-0000-0000-000000000001', type: 'RESTOCK', quantity: 10 });
       
       expect(res.statusCode).toBe(201);
+    });
+  });
+
+  describe('POST /api/vehicles/:id/purchase', () => {
+    it('should call processTransaction with type PURCHASE', async () => {
+      mockTransactionService.processTransaction.mockResolvedValue({ id: 't2' });
+      const res = await request(app).post('/api/vehicles/v1/purchase')
+        .set('x-role', 'USER')
+        .send({ quantity: 2 });
+      
+      expect(res.statusCode).toBe(201);
+      expect(mockTransactionService.processTransaction).toHaveBeenCalledWith(
+        'mock-user-id', 
+        { vehicle_id: 'v1', type: 'PURCHASE', quantity: 2 }
+      );
+    });
+    
+    it('should default quantity to 1 if not provided', async () => {
+      mockTransactionService.processTransaction.mockResolvedValue({ id: 't3' });
+      const res = await request(app).post('/api/vehicles/v1/purchase')
+        .set('x-role', 'USER');
+      
+      expect(res.statusCode).toBe(201);
+      expect(mockTransactionService.processTransaction).toHaveBeenCalledWith(
+        'mock-user-id', 
+        { vehicle_id: 'v1', type: 'PURCHASE', quantity: 1 }
+      );
+    });
+  });
+
+  describe('POST /api/vehicles/:id/restock', () => {
+    it('should call processTransaction with type RESTOCK for ADMIN', async () => {
+      mockTransactionService.processTransaction.mockResolvedValue({ id: 't4' });
+      const res = await request(app).post('/api/vehicles/v1/restock')
+        .set('x-role', 'ADMIN')
+        .send({ quantity: 5 });
+      
+      expect(res.statusCode).toBe(201);
+      expect(mockTransactionService.processTransaction).toHaveBeenCalledWith(
+        'mock-user-id', 
+        { vehicle_id: 'v1', type: 'RESTOCK', quantity: 5 }
+      );
+    });
+
+    it('should return 403 for non-admin', async () => {
+      const res = await request(app).post('/api/vehicles/v1/restock')
+        .set('x-role', 'USER')
+        .send({ quantity: 5 });
+      
+      expect(res.statusCode).toBe(403);
     });
   });
 

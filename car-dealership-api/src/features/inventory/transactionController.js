@@ -32,6 +32,28 @@ class TransactionController {
     res.status(201).json(transaction);
   }
 
+  async purchase(req, res) {
+    const vehicle_id = req.params.id;
+    const quantity = req.body?.quantity || 1;
+    const transaction = await this.transactionService.processTransaction(req.user.id, {
+      vehicle_id,
+      type: 'PURCHASE',
+      quantity
+    });
+    res.status(201).json(transaction);
+  }
+
+  async restock(req, res) {
+    const vehicle_id = req.params.id;
+    const quantity = req.body?.quantity || 1;
+    const transaction = await this.transactionService.processTransaction(req.user.id, {
+      vehicle_id,
+      type: 'RESTOCK',
+      quantity
+    });
+    res.status(201).json(transaction);
+  }
+
   async getMyTransactions(req, res) {
     const transactions = await this.transactionService.getUserTransactions(req.user.id);
     res.status(200).json(transactions);
