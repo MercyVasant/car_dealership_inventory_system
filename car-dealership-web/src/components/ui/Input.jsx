@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-export const Input = forwardRef(({ className = '', type = 'text', error, label, id, disabled, ...props }, ref) => {
+export const Input = forwardRef(({ className = '', type = 'text', error, label, id, disabled, style: customStyle, ...props }, ref) => {
   return (
     <div style={{ width: '100%' }}>
       {label && (
@@ -18,6 +18,7 @@ export const Input = forwardRef(({ className = '', type = 'text', error, label, 
         type={type}
         disabled={disabled}
         className={className}
+        {...props}
         style={{
           display: 'block', width: '100%',
           background: '#1e293b', color: '#f8fafc',
@@ -29,10 +30,10 @@ export const Input = forwardRef(({ className = '', type = 'text', error, label, 
           transition: 'border-color 0.2s',
           opacity: disabled ? 0.5 : 1,
           cursor: disabled ? 'not-allowed' : 'text',
+          ...(customStyle || {})
         }}
         onFocus={e => { e.target.style.borderColor = '#d4af37'; }}
         onBlur={e => { e.target.style.borderColor = error ? '#ef4444' : '#334155'; }}
-        {...props}
       />
       {error && <p style={{ marginTop: '6px', fontSize: '13px', color: '#ef4444' }}>{error}</p>}
     </div>
