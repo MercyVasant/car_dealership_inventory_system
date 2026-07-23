@@ -19,21 +19,25 @@ export const VehicleCard = ({ vehicle, onPurchase }) => {
   const { id, make, model, category, price, quantity_in_stock, image_url, year } = vehicle;
 
   const getFallbackImage = (brand) => {
+    const b = brand?.toLowerCase();
     const brandImages = {
-      'porsche': 'https://images.unsplash.com/photo-1503376760367-15ea62194a28?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'lamborghini': 'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'rolls-royce': 'https://images.unsplash.com/photo-1631835777085-f53835694a11?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'bentley': 'https://images.unsplash.com/photo-1610738604313-2bcf8198f828?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'ferrari': 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'mclaren': 'https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'aston martin': 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'toyota': 'https://images.unsplash.com/photo-1629897048514-3dd741428f8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'honda': 'https://images.unsplash.com/photo-1612825173281-9a193378527e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'ford': 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'chevrolet': 'https://images.unsplash.com/photo-1552615526-40e47a79f9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'tesla': 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      'porsche': '/images/porsche.png',
+      'bmw': '/images/bmw.png',
+      'lamborghini': 'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?w=800&q=80',
+      'rolls-royce': 'https://images.unsplash.com/photo-1503376760367-15ea62194a28?w=800&q=80',
+      'bentley': 'https://images.unsplash.com/photo-1580274455191-1c62238fa1c7?w=800&q=80',
+      'ferrari': 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=800&q=80',
+      'mclaren': 'https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?w=800&q=80',
+      'aston martin': 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=800&q=80',
+      'audi': 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=800&q=80',
+      'mercedes': 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&q=80',
+      'toyota': 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800&q=80',
+      'honda': 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&q=80',
+      'ford': 'https://images.unsplash.com/photo-1551830820-330a71b99659?w=800&q=80',
+      'chevrolet': 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80',
+      'tesla': 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80'
     };
-    return brandImages[brand?.toLowerCase()] || `https://images.unsplash.com/photo-1494976388531-d1058494cdd8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`;
+    return brandImages[b] || '/images/car_default.png';
   };
 
   const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(price);
@@ -63,8 +67,13 @@ export const VehicleCard = ({ vehicle, onPurchase }) => {
           alt={`${make} ${model}`}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           onError={(e) => {
-            // Fallback for broken image_urls
-            e.target.src = getFallbackImage(make);
+            if (!e.target.dataset.failed) {
+              e.target.dataset.failed = true;
+              e.target.src = getFallbackImage(make);
+            } else {
+              e.target.onerror = null;
+              e.target.src = '/images/car_default.png';
+            }
           }}
         />
         <div style={{ position: 'absolute', top: '16px', left: '16px' }}>

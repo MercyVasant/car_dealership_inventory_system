@@ -44,7 +44,7 @@ export const VehicleList = () => {
 
   const handlePurchase = async (vehicleId) => {
     try {
-      await apiClient.post('/transactions/purchase', { vehicle_id: vehicleId, quantity: 1 });
+      await apiClient.post('/transactions', { vehicle_id: vehicleId, quantity: 1, type: 'PURCHASE' });
       fetchVehicles();
     } catch (err) {
       setError(err.response?.data?.error || 'Purchase failed');

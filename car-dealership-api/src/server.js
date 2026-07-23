@@ -15,17 +15,18 @@ app.use(helmet());
 const { ForbiddenError } = require('./utils/errors');
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'http://13.239.31.21'];
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (curl, Postman, mobile apps)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new ForbiddenError(msg), false);
+    // Allow any localhost port for development + production IP
+    if (origin.startsWith('http://localhost:') || origin === 'http://13.239.31.21') {
+      return callback(null, true);
     }
-    return callback(null, true);
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new ForbiddenError(msg), false);
   },
   credentials: true,
 };
+// Handle preflight OPTIONS requests for all routes
 app.use(cors(corsOptions));
 app.use(express.json());
 

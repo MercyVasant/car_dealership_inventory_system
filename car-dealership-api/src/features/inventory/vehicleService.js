@@ -34,7 +34,7 @@ class VehicleService {
     const where = { is_deleted: false };
     if (make) where.make = { [Op.iLike]: `%${make}%` };
     if (model) where.model = { [Op.iLike]: `%${model}%` };
-    if (category) where.category = category;
+    if (category) where.category = { [Op.iLike]: `%${category}%` };
     
     if (minPrice !== undefined || maxPrice !== undefined) {
       where.price = {};

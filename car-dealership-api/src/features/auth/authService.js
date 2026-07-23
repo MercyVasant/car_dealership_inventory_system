@@ -92,7 +92,8 @@ class AuthService {
 
     return {
       accessToken,
-      refreshToken: refreshTokenString
+      refreshToken: refreshTokenString,
+      user: { id: user.id, email: user.email, role: user.role }
     };
   }
 }

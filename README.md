@@ -6,25 +6,88 @@ The Car Dealership Inventory System is a full-stack web application designed to 
 The system allows administrators to manage vehicle inventory (add, update, delete, restock) while allowing regular users to browse the available collection, view details, and purchase vehicles. The frontend is fully responsive and styled with a luxury dark/gold theme to provide a premium user experience.
 
 ### Core Technologies:
-- **Backend:** Node.js, Express, Sequelize, SQLite, JSON Web Tokens (JWT) for authentication.
+- **Backend:** Node.js, Express, Sequelize, PostgreSQL, JSON Web Tokens (JWT) for authentication.
 - **Frontend:** React, React Router, Context API, CSS3 for styling.
+
+## Class Diagram (Database Schema)
+
+```mermaid
+classDiagram
+    class User {
+        +Integer id
+        +String username
+        +String email
+        +String password_hash
+        +String role
+        +Date created_at
+        +Date updated_at
+    }
+    
+    class Vehicle {
+        +Integer id
+        +String make
+        +String model
+        +String category
+        +Integer year
+        +Decimal price
+        +Integer quantity_in_stock
+        +String image_url
+        +Boolean is_deleted
+        +Date created_at
+        +Date updated_at
+    }
+    
+    class Transaction {
+        +Integer id
+        +Integer user_id
+        +Integer vehicle_id
+        +Integer quantity
+        +Decimal total_price
+        +String transaction_date
+        +Date created_at
+        +Date updated_at
+    }
+    
+    class RefreshToken {
+        +Integer id
+        +String token
+        +Integer user_id
+        +Date expires_at
+        +Boolean is_revoked
+        +Date created_at
+        +Date updated_at
+    }
+
+    User "1" -- "0..*" Transaction : makes
+    User "1" -- "0..*" RefreshToken : has
+    Vehicle "1" -- "0..*" Transaction : involves
+```
 
 ## Setup and Run Instructions
 
 ### Prerequisites
 - Node.js (v16 or higher)
 - npm or yarn
+- PostgreSQL (Ensure it is running and accessible on port 5432)
 
 ### Backend Setup
 1. Open a terminal and navigate to the backend directory:
    ```bash
    cd car-dealership-api
    ```
-2. Install dependencies:
+2. Configure `.env` with your PostgreSQL credentials:
+   ```env
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_USER=myuser
+   DB_PASSWORD=mypassword
+   DB_NAME=car_dealership
+   ```
+3. Install dependencies:
    ```bash
    npm install
    ```
-3. Run the development server:
+4. Run the development server:
    ```bash
    npm run dev
    ```
@@ -52,18 +115,3 @@ The system allows administrators to manage vehicle inventory (add, update, delet
 
 **Admin Dashboard**
 ![Admin Dashboard](./README_images/screenshot_dashboard.png)
-
-## My AI Usage
-
-### Tools Used
-- **Google Gemini (Antigravity IDE Agent)**
-
-### How AI was Used
-I utilized the Gemini AI assistant in an agentic coding environment (Antigravity IDE) to rapidly build and refactor the application. Some specific use cases included:
-- **UI/UX Design:** Prompting the AI to overhaul the React frontend with a "luxury, minimalist dark and gold aesthetic" instead of standard boilerplate layouts.
-- **Backend Refactoring:** Utilizing the agent to automatically diagnose and fix a crash caused by corrupted Swagger documentation, and fixing a `TypeError` by correctly injecting Sequelize models into the repository layer.
-- **Test Generation & TDD:** Having the AI assist in fixing failing CORS tests and maintaining a proper Red-Green-Refactor loop.
-- **Image Integration:** Asking the AI to dynamically apply Unsplash fallback images and integrating real user-provided images of luxury vehicles (BMWs, Porsches) directly into the SQLite database.
-
-### Reflection on AI Workflow Impact
-Using AI significantly accelerated my development speed. Instead of manually writing boilerplate for components, forms, and database seeding, I was able to direct the AI with high-level goals ("add a BMW using this image", "make the vehicle cards horizontal"). The most valuable aspect was the AI's ability to seamlessly transition between fixing deep backend node exceptions to styling frontend components within the same context window. It taught me that breaking tasks down into small, iterative steps leads to the most effective AI collaboration.

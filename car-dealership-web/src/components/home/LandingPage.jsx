@@ -68,11 +68,12 @@ export const LandingPage = () => {
               }}>
                 <img 
                   src={
-                    v.make === 'Porsche' ? 'https://images.unsplash.com/photo-1503376760367-15ea62194a28?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' :
-                    v.make === 'Lamborghini' ? 'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' :
-                    v.make === 'Rolls-Royce' ? 'https://images.unsplash.com/photo-1631835777085-f53835694a11?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' :
-                    'https://images.unsplash.com/photo-1610738604313-2bcf8198f828?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                    v.make === 'Porsche' ? '/images/porsche.png' :
+                    v.make === 'Lamborghini' ? '/images/bmw.png' :
+                    v.make === 'Rolls-Royce' ? '/images/bmw_m3.png' :
+                    '/images/bmw_m4.png'
                   }
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/images/car_default.png'; }}
                   alt={`${v.make} ${v.model}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
