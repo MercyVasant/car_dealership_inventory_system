@@ -78,4 +78,27 @@ describe('AuthController (Integration)', () => {
       expect(res.statusCode).toEqual(401);
     });
   });
+
+  describe('POST /api/auth/refresh', () => {
+    it('should refresh token and return new access token', async () => {
+      mockAuthService.refresh.mockResolvedValue({ accessToken: 'new_access' });
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ token: 'valid_refresh' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('accessToken', 'new_access');
+    });
+
+    it('should return 401 for invalid refresh token', async () => {
+      mockAuthService.refresh.mockRejectedValue(new Error('Invalid refresh token'));
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ token: 'invalid' });
+
+      expect(res.statusCode).toEqual(401);
+    });
+  });
 });
