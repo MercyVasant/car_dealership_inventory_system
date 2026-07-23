@@ -3,19 +3,20 @@ import apiClient from '../../api/apiClient';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
+import { RestockModal } from './RestockModal';
 
 export const AdminInventoryPanel = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [restockVehicle, setRestockVehicle] = useState(null);
   const [form, setForm] = useState({ make: '', model: '', category: '', price: '', quantity_in_stock: 0 });
 
   const fetchVehicles = async () => {
     setLoading(true);
     try {
-      // API: GET /api/vehicles → { vehicles: [] } (auth required)
       const response = await apiClient.get('/vehicles');
-      setVehicles(response.data.vehicles);
+      setVehicles(response.data.data || []);
     } finally {
       setLoading(false);
     }
@@ -24,14 +25,18 @@ export const AdminInventoryPanel = () => {
   useEffect(() => { fetchVehicles(); }, []);
 
   const handleDelete = async (id) => {
-    // API: DELETE /api/vehicles/:id → 204 (ADMIN)
     await apiClient.delete(`/vehicles/${id}`);
+    fetchVehicles();
+  };
+
+  const handleRestock = async (vehicleId, quantity) => {
+    await apiClient.post('/transactions/restock', { vehicle_id: vehicleId, quantity });
+    setRestockVehicle(null);
     fetchVehicles();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // API: POST /api/vehicles → 201 (ADMIN)
     await apiClient.post('/vehicles', { ...form, price: Number(form.price) });
     setIsModalOpen(false);
     setForm({ make: '', model: '', category: '', price: '', quantity_in_stock: 0 });
@@ -67,7 +72,8 @@ export const AdminInventoryPanel = () => {
                   <td className="px-4 py-3 text-sm">{v.category}</td>
                   <td className="px-4 py-3 text-sm">${Number(v.price).toLocaleString()}</td>
                   <td className="px-4 py-3 text-sm">{v.quantity_in_stock}</td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm flex gap-2">
+                    <Button variant="secondary" onClick={() => setRestockVehicle(v)}>Restock</Button>
                     <Button variant="danger" onClick={() => handleDelete(v.id)}>Delete</Button>
                   </td>
                 </tr>
@@ -90,6 +96,13 @@ export const AdminInventoryPanel = () => {
           </div>
         </form>
       </Modal>
+
+      <RestockModal 
+        isOpen={!!restockVehicle}
+        onClose={() => setRestockVehicle(null)}
+        vehicle={restockVehicle}
+        onConfirm={handleRestock}
+      />
     </div>
   );
 };
