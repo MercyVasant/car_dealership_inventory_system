@@ -1,29 +1,36 @@
+const { NotFoundError, BadRequestError } = require('../../utils/errors');
+
 class TransactionService {
   constructor(transactionRepository, vehicleRepository) {
     this.transactionRepository = transactionRepository;
     this.vehicleRepository = vehicleRepository;
   }
 
-  async purchaseVehicle(userId, vehicleId) {
-    const vehicle = await this.vehicleRepository.findById(vehicleId);
+  async processTransaction(userId, { vehicle_id, type, quantity }) {
+    const vehicle = await this.vehicleRepository.findById(vehicle_id);
     
-    if (!vehicle) {
-      throw new Error('Vehicle not found');
+    if (!vehicle || vehicle.is_deleted) {
+      throw new NotFoundError('Vehicle not found');
     }
 
-    if (vehicle.status !== 'AVAILABLE') {
-      throw new Error('Vehicle is not available for purchase');
+    if (type === 'PURCHASE') {
+      if (vehicle.quantity_in_stock < quantity) {
+        throw new BadRequestError('Not enough stock available');
+      }
+      vehicle.quantity_in_stock -= quantity;
+    } else if (type === 'RESTOCK') {
+      vehicle.quantity_in_stock += quantity;
     }
 
-    // Process the purchase (simplified)
-    vehicle.status = 'SOLD';
     await vehicle.save();
 
     const transaction = await this.transactionRepository.create({
-      buyer_id: userId,
-      vehicle_id: vehicleId,
-      sale_price: vehicle.price,
-      status: 'COMPLETED'
+      user_id: userId,
+      vehicle_id: vehicle.id,
+      type,
+      quantity,
+      price_at_time: vehicle.price,
+      status: 'SUCCESS'
     });
 
     return transaction;
@@ -31,6 +38,12 @@ class TransactionService {
 
   async getUserTransactions(userId) {
     return await this.transactionRepository.findByUserId(userId);
+  }
+
+  async getAllTransactions({ page = 1, limit = 20 }) {
+    const offset = (page - 1) * limit;
+    const { rows, count } = await this.transactionRepository.findAll({ offset, limit, order: [['created_at', 'DESC']] });
+    return { data: rows, total: count, page, limit };
   }
 }
 

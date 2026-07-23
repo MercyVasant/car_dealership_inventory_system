@@ -40,8 +40,8 @@ const authLimiter = rateLimit({
 
 app.use('/api/auth', authLimiter, authRoutes);
 
-const vehicleRoutes = require('./features/inventory/routes');
-app.use('/api/vehicles', vehicleRoutes);
+const inventoryRoutes = require('./features/inventory/routes');
+app.use('/api', inventoryRoutes);
 
 const { errorHandler } = require('./middleware/errorHandler');
 

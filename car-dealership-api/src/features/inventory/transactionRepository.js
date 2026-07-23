@@ -19,6 +19,10 @@ class TransactionRepository {
       order: [['created_at', 'DESC']]
     });
   }
+
+  async findAll(options = {}) {
+    return await this.Transaction.findAndCountAll(options);
+  }
 }
 
 module.exports = { TransactionRepository };
