@@ -1,32 +1,24 @@
 const request = require('supertest');
 const express = require('express');
-
-// We will mock the authService so we can test the controller in isolation
-const { AuthService } = require('../../src/features/auth/authService');
-jest.mock('../../src/features/auth/authService');
-
-const authRoutes = require('../../src/features/auth/routes'); // We'll create this
-
-const app = express();
-app.use(express.json());
-app.use('/api/auth', authRoutes);
+const { AuthController } = require('../../src/features/auth/authController');
 
 describe('AuthController (Integration)', () => {
   let mockAuthService;
+  let app;
 
   beforeEach(() => {
-    // Clear all instances and calls to constructor and all methods:
-    AuthService.mockClear();
-    
-    // We get the mocked instance
     mockAuthService = {
       register: jest.fn(),
       login: jest.fn(),
       refresh: jest.fn()
     };
     
-    // Make the mock constructor return our mock instance
-    AuthService.mockImplementation(() => mockAuthService);
+    const authController = new AuthController(mockAuthService);
+    
+    app = express();
+    app.use(express.json());
+    app.post('/api/auth/register', (req, res) => authController.register(req, res));
+    app.post('/api/auth/login', (req, res) => authController.login(req, res));
   });
 
   describe('POST /api/auth/register', () => {
