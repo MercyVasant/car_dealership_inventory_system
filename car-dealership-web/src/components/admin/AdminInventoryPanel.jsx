@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
-import apiClient from '../../api/apiClient';
+import { vehicleApi } from '../../api/vehicleApi';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
@@ -19,7 +19,7 @@ export const AdminInventoryPanel = () => {
   const fetchVehicles = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get('/vehicles');
+      const response = await vehicleApi.getVehicles();
       setVehicles(response.data.data || []);
     } finally {
       setLoading(false);
@@ -29,19 +29,19 @@ export const AdminInventoryPanel = () => {
   useEffect(() => { fetchVehicles(); }, []);
 
   const handleDelete = async (id) => {
-    await apiClient.delete(`/vehicles/${id}`);
+    await vehicleApi.deleteVehicle(id);
     fetchVehicles();
   };
 
   const handleRestock = async (vehicleId, quantity) => {
-    await apiClient.post('/transactions/restock', { vehicle_id: vehicleId, quantity });
+    await vehicleApi.restockVehicle(vehicleId, quantity);
     setRestockVehicle(null);
     fetchVehicles();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await apiClient.post('/vehicles', { ...form, price: Number(form.price), quantity_in_stock: Number(form.quantity_in_stock) });
+    await vehicleApi.createVehicle({ ...form, price: Number(form.price), quantity_in_stock: Number(form.quantity_in_stock) });
     setIsModalOpen(false);
     setForm(INITIAL_FORM_STATE);
     fetchVehicles();

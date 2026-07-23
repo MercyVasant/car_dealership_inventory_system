@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
-import apiClient from '../../api/apiClient';
+import { vehicleApi } from '../../api/vehicleApi';
 import { VehicleCard } from './VehicleCard';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
@@ -26,7 +26,7 @@ export const VehicleList = () => {
       if (category) params.category = category;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
-      const response = await apiClient.get('/vehicles/search', { params });
+      const response = await vehicleApi.searchVehicles(params);
       setVehicles(response.data.data || []);
     } catch {
       setError('Failed to load vehicles');
@@ -36,15 +36,17 @@ export const VehicleList = () => {
   }, [make, model, category, minPrice, maxPrice]);
 
   useEffect(() => {
-    fetchVehicles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const timer = setTimeout(() => {
+      fetchVehicles();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [fetchVehicles]);
 
-  const handleSearch = (e) => { e.preventDefault(); fetchVehicles(); };
+  const handleSearch = (e) => { e.preventDefault(); };
 
   const handlePurchase = async (vehicleId) => {
     try {
-      await apiClient.post('/transactions', { vehicle_id: vehicleId, quantity: 1, type: 'PURCHASE' });
+      await vehicleApi.purchaseVehicle(vehicleId);
       fetchVehicles();
     } catch (err) {
       setError(err.response?.data?.error || 'Purchase failed');
@@ -55,26 +57,55 @@ export const VehicleList = () => {
     <div style={{ minHeight: '100vh', background: '#0f172a', color: '#f8fafc', fontFamily: "'Montserrat', sans-serif" }}>
       <Navbar />
 
-      {/* Search Header */}
       <div style={{
-        background: '#1e293b',
-        borderBottom: '1px solid #334155',
+        background: '#000',
+        borderBottom: '1px solid #222',
         padding: '32px 24px'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#f8fafc', marginBottom: '24px' }}>
-            Browse Collection
-          </h2>
           <form onSubmit={handleSearch} style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '16px', alignItems: 'end',
+            display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '12px', alignItems: 'center',
           }}>
-            <Input label="Brand" id="make" placeholder="e.g. Porsche" value={make} onChange={(e) => setMake(e.target.value)} />
-            <Input label="Model" id="model" placeholder="e.g. 911" value={model} onChange={(e) => setModel(e.target.value)} />
-            <Input label="Type" id="category" placeholder="e.g. Coupe" value={category} onChange={(e) => setCategory(e.target.value)} />
-            <Input label="Min Value" id="minPrice" type="number" placeholder="0" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
-            <Input label="Max Value" id="maxPrice" type="number" placeholder="No limit" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
-            <Button type="submit" style={{ padding: '12px' }}>Apply Filters</Button>
+            <input 
+              placeholder="SEARCH MANUFACTURER" 
+              value={make} 
+              onChange={(e) => setMake(e.target.value)}
+              style={{ background: '#0a0a0a', border: '1px solid #222', color: '#fff', padding: '14px', fontSize: '12px', letterSpacing: '1px', outline: 'none' }}
+            />
+            <input 
+              placeholder="SEARCH DESIGNATION" 
+              value={model} 
+              onChange={(e) => setModel(e.target.value)}
+              style={{ background: '#0a0a0a', border: '1px solid #222', color: '#fff', padding: '14px', fontSize: '12px', letterSpacing: '1px', outline: 'none' }}
+            />
+            <select 
+              value={category} 
+              onChange={(e) => setCategory(e.target.value)}
+              style={{ background: '#0a0a0a', border: '1px solid #222', color: '#fff', padding: '14px', fontSize: '12px', letterSpacing: '1px', outline: 'none', appearance: 'none' }}
+            >
+              <option value="">GLOBAL INVENTORY (ALL)</option>
+              <option value="EXECUTIVE SALOON">EXECUTIVE SALOON</option>
+              <option value="SPORT UTILITY">SPORT UTILITY</option>
+              <option value="SUPERCAR">SUPERCAR</option>
+              <option value="GRAND TOURER">GRAND TOURER</option>
+              <option value="ELECTRIC ASSET">ELECTRIC ASSET</option>
+            </select>
+            <input 
+              placeholder="MIN $" 
+              type="number" 
+              value={minPrice} 
+              onChange={(e) => setMinPrice(e.target.value)}
+              style={{ background: '#0a0a0a', border: '1px solid #222', color: '#fff', padding: '14px', fontSize: '12px', letterSpacing: '1px', outline: 'none' }}
+            />
+            <input 
+              placeholder="MAX $" 
+              type="number" 
+              value={maxPrice} 
+              onChange={(e) => setMaxPrice(e.target.value)}
+              style={{ background: '#0a0a0a', border: '1px solid #222', color: '#fff', padding: '14px', fontSize: '12px', letterSpacing: '1px', outline: 'none' }}
+            />
+            <button type="submit" style={{ display: 'none' }}>Search</button>
           </form>
         </div>
       </div>

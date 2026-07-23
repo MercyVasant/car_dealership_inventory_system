@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components, no-unused-vars, no-empty, react-hooks/set-state-in-effect */
 import { createContext, useContext, useState, useEffect } from 'react';
 import apiClient, { setToken as setApiToken } from '../api/apiClient';
+import { authApi } from '../api/authApi';
 
 export const AuthContext = createContext(null);
 
@@ -15,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     // API returns { accessToken, user } — verified from authService.js
-    const response = await apiClient.post('/auth/login', { email, password });
+    const response = await authApi.login({ email, password });
     const { accessToken, user: userData } = response.data;
     setToken(accessToken);
     setApiToken(accessToken);
@@ -24,12 +25,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (username, email, password) => {
-    await apiClient.post('/auth/register', { username, email, password });
+    await authApi.register({ username, email, password });
     return login(email, password); // auto-login after register
   };
 
   const logout = async () => {
-    try { await apiClient.post('/auth/logout'); } catch (_) {}
+    try { await authApi.logout(); } catch (_) {}
     setUser(null);
     setToken(null);
     setApiToken(null);
