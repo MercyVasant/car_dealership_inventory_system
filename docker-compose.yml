@@ -1,49 +1,16 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16
-    container_name: car_dealership_db
-    restart: always
+  db:
+    image: postgres:15-alpine
     environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_DB: ${DB_NAME:-car_dealership}
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: cardealership
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  api:
-    build: 
-      context: ./car-dealership-api
-      dockerfile: Dockerfile
-    container_name: car_dealership_api
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-password}
-      - DB_NAME=${DB_NAME:-car_dealership}
-      - JWT_SECRET=${JWT_SECRET:-supersecretjwt12345}
-    depends_on:
-      - postgres
-
-  web:
-    build: 
-      context: ./car-dealership-web
-      dockerfile: Dockerfile
-    container_name: car_dealership_web
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:3000/api
-    depends_on:
-      - api
 
 volumes:
   postgres_data:
