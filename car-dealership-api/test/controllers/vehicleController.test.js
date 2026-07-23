@@ -6,7 +6,7 @@ const { errorHandler } = require('../../src/middleware/errorHandler');
 
 // Mock auth middleware to easily simulate USER or ADMIN
 jest.mock('../../src/middleware/auth', () => ({
-  authenticate: (req, res, next) => {
+  authMiddleware: (req, res, next) => {
     req.user = { id: 'mock-user-id', role: req.headers['x-role'] || 'USER' };
     next();
   },
@@ -26,19 +26,21 @@ describe('VehicleController (Integration)', () => {
     mockVehicleService = {
       createVehicle: jest.fn(),
       getVehicles: jest.fn(),
+      updateVehicle: jest.fn(),
+      deleteVehicle: jest.fn(),
     };
 
     const vehicleController = new VehicleController(mockVehicleService);
     app = express();
     app.use(express.json());
 
-    const { authenticate, authorize } = require('../../src/middleware/auth');
+    const { authMiddleware, authorize } = require('../../src/middleware/auth');
 
     // Mocks for POST and GET
-    app.post('/api/vehicles', authenticate, authorize('ADMIN'), catchAsync((req, res) => vehicleController.createVehicle(req, res)));
-    app.get('/api/vehicles', authenticate, catchAsync((req, res) => vehicleController.getVehicles(req, res)));
-    app.put('/api/vehicles/:id', authenticate, authorize('ADMIN'), catchAsync((req, res) => vehicleController.updateVehicle(req, res)));
-    app.delete('/api/vehicles/:id', authenticate, authorize('ADMIN'), catchAsync((req, res) => vehicleController.deleteVehicle(req, res)));
+    app.post('/api/vehicles', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.createVehicle(req, res)));
+    app.get('/api/vehicles', authMiddleware, catchAsync((req, res) => vehicleController.getVehicles(req, res)));
+    app.put('/api/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.updateVehicle(req, res)));
+    app.delete('/api/vehicles/:id', authMiddleware, authorize('ADMIN'), catchAsync((req, res) => vehicleController.deleteVehicle(req, res)));
 
     app.use(errorHandler);
   });

@@ -28,7 +28,7 @@ const initTransactionModel = (sequelize) => {
       validate: { min: 1 }
     },
     price_at_time: {
-      type: DataTypes.DECIMAL(12, 2),
+      type: DataTypes.DECIMAL,
       allowNull: false,
     },
     status: {

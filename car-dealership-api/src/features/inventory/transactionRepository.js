@@ -14,7 +14,7 @@ class TransactionRepository {
   async findByUserId(userId) {
     return await this.Transaction.findAll({
       where: {
-        buyer_id: userId
+        user_id: userId
       },
       order: [['created_at', 'DESC']]
     });

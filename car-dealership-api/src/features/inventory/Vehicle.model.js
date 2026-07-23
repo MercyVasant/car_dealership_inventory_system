@@ -20,7 +20,7 @@ const initVehicleModel = (sequelize) => {
       allowNull: false,
     },
     price: {
-      type: DataTypes.DECIMAL(12, 2),
+      type: DataTypes.DECIMAL,
       allowNull: false,
       validate: { min: 0 }
     },
