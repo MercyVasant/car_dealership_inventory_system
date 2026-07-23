@@ -50,8 +50,27 @@ class AuthService {
 
     const user = tokenRecord.User; // Assumes relationship is loaded, or we fetch it
     const accessToken = this.generateAccessToken(user);
+    const refreshTokenString = crypto.randomBytes(40).toString('hex');
     
-    return { accessToken };
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Revoke old token and create new one
+    await this.refreshTokenRepository.revoke(tokenRecord.id);
+    await this.refreshTokenRepository.create({
+      token: refreshTokenString,
+      user_id: user.id,
+      expires_at: expiresAt
+    });
+    
+    return { accessToken, refreshToken: refreshTokenString };
+  }
+
+  async logout(tokenString) {
+    const tokenRecord = await this.refreshTokenRepository.findByToken(tokenString);
+    if (tokenRecord) {
+      await this.refreshTokenRepository.revoke(tokenRecord.id);
+    }
   }
 
   generateAccessToken(user) {
